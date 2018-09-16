@@ -7,7 +7,7 @@ import json
 import time
 import os
 
-TOKEN = os.environ["SuperBot_TOKEN"]
+TOKEN = "MzkwMzI5NzE5ODcyMTU5NzY1.Dnxfsw.-IPj66ctnLzZnMrGTdUI8jZnGnU"
 VERSION = "v0.04"
 PREFIX = ">"
 OWNERID = "248242789169496064"
