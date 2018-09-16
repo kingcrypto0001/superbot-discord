@@ -7,10 +7,10 @@ import json
 import time
 import os
 
-TOKEN = "MzkwMzI5NzE5ODcyMTU5NzY1.Dnxfsw.-IPj66ctnLzZnMrGTdUI8jZnGnU"
-VERSION = "v0.04"
-PREFIX = ">"
-OWNERID = "248242789169496064"
+TOKEN = os.environ["SuperBot_TOKEN"]
+VERSION = "v0.05"
+PREFIX = ","
+OWNERID = ["248242789169496064", "307934179738386452"] #ME, Astraqa
 
 client = commands.Bot(command_prefix = PREFIX)
 client.remove_command("help")
@@ -39,21 +39,22 @@ async def clear(ctx, amount = 100):
 #CHANGE STATUS COMMAND
 @client.command(pass_context = True)
 async def status(ctx, *args):
-    if ctx.message.author.id == OWNERID:
-        output = ""
-        for word in args:
-            output = output + word
-            output = output + " "
+    for ownerid in OWNERID:
+        if ctx.message.author.id == ownerid:
+            output = ""
+            for word in args:
+                output = output + word
+                output = output + " "
 
-        print(output)
-        if output == "(normal) ":
-            await client.change_presence(game = discord.Game(name = normal_status))
-            await client.say("Status was changed to " + normal_status)
+            print(output)
+            if output == "(normal) ":
+                await client.change_presence(game = discord.Game(name = normal_status))
+                await client.say("Status was changed to " + normal_status)
+            else:
+                await client.change_presence(game = discord.Game(name = output))
+                await client.say("Status was changed to " + output + ".")
         else:
-            await client.change_presence(game = discord.Game(name = output))
-            await client.say("Status was changed to " + output + ".")
-    else:
-        await client.say("You don't have permission to run the command.")
+            await client.say("You don't have permission to run the command.")
 
 #BITCOIN BOT COMMAND
 @client.command()
