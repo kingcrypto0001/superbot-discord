@@ -8,8 +8,8 @@ import time
 import os
 
 TOKEN = "MzkwMzI5NzE5ODcyMTU5NzY1.Dnxfsw.-IPj66ctnLzZnMrGTdUI8jZnGnU"
-VERSION = "v0.05"
-PREFIX = ","
+VERSION = "v0.07"
+PREFIX = ">"
 OWNERID = ["248242789169496064", "307934179738386452"] #ME, Astraqa
 
 client = commands.Bot(command_prefix = PREFIX)
@@ -26,6 +26,12 @@ async def on_ready():
     print(normal_status)
     await client.change_presence(game = discord.Game(name = normal_status))
     print("Bot Connected.")
+
+#ON MESSAGE EVENT
+@client.event
+async def on_message(message):
+    message.content = message.content.lower()
+    await client.process_commands(message)
 
 #CLEAR COMMAND
 @client.command(pass_context = True)
@@ -46,16 +52,14 @@ async def status(ctx, *args):
                 output = output + word
                 output = output + " "
 
-            print(output)
             if output == "(normal) ":
                 await client.change_presence(game = discord.Game(name = normal_status))
                 await client.say("Status was changed to " + normal_status)
             else:
                 await client.change_presence(game = discord.Game(name = output))
-                await client.say("Status was changed to " + output + ".")
-      elif ctx.message.author.id != ownerid:
-        await client.say("error code: 404")
-        await client.say("You don't have permission to run the command.")
+                await client.say("Status was changed to " + output)
+        else:
+           await client.delete_message(ctx.message)
 
 #BITCOIN BOT COMMAND
 @client.command()
@@ -65,7 +69,9 @@ async def bitcoin():
         raw_response = await session.get(url)
         response = await raw_response.text()
         response = json.loads(response)
-        await client.say("Bitcoin price is: $" + response["bpi"]["USD"]["rate"] + " | Last Updated: " + response["time"]["updated"])
+        embed = discord.Embed(color = discord.Colour.blue())
+        embed.set_author(name = "Bitcoin price is: $" + response["bpi"]["USD"]["rate"] + " | Last Updated: " + response["time"]["updated"])
+        await client.say(embed = embed)
 
 #ECHO BOT COMMAND
 @client.command(pass_context = True)
@@ -83,6 +89,19 @@ async def echo(ctx, *args):
     embed.set_author(name = output)
     
     await client.say(embed = embed)
+
+#DM COMMAND
+@client.command(pass_context = True)
+async def dm(ctx, user : discord.Member, *args):
+    output = ""
+    for word in args:
+        output = output + word
+        output = output + " "
+    
+
+    embed = discord.Embed(title = output, colour = discord.Colour.green())
+
+    await client.send_message(user, embed = embed)
 
 #PING BOT COMMAND
 @client.command(pass_context = True)
@@ -112,7 +131,7 @@ async def help(ctx):
         colour = discord.Colour.blue()
     )
 
-    embed.set_author(name = "*HELP*")
+    embed.set_author(name = "HELP")
     
     embed.add_field(name = "clear", value = "Clears the amount of messages [arg1]", inline = False)
     embed.add_field(name = "bitcoin", value = "Shows 1 BTC amount in USD.", inline = False)
