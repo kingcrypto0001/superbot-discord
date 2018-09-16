@@ -8,7 +8,7 @@ import time
 import os
 
 TOKEN = "MzkwMzI5NzE5ODcyMTU5NzY1.Dnxfsw.-IPj66ctnLzZnMrGTdUI8jZnGnU"
-VERSION = "v0.07"
+VERSION = "v0.08"
 PREFIX = ">"
 OWNERID = ["248242789169496064", "307934179738386452"] #ME, Astraqa
 
@@ -30,17 +30,29 @@ async def on_ready():
 #ON MESSAGE EVENT
 @client.event
 async def on_message(message):
-    message.content = message.content.lower()
-    await client.process_commands(message)
+    try:
+        message.content = message.content.lower()
+        await client.process_commands(message)
+    except: discord.ext.commands.CommandNotFound
+
 
 #CLEAR COMMAND
 @client.command(pass_context = True)
-async def clear(ctx, amount = 100):
+async def clear(ctx, amount):
     channel = ctx.message.channel
+    amount = int(amount)
     messages = []
-    async for message in client.logs_from(channel, limit = int(amount)):            
-        messages.append(message)
-    await client.delete_messages(messages)
+    async for message in client.logs_from(channel, limit = amount):
+        if amount > 100:
+            await client.delete_message(message)
+            await asyncio.sleep(0.05)    
+        elif amount <= 100:           
+            messages.append(message)
+
+    try:
+        await client.delete_messages(messages)
+    except:
+        discord.errors.NotFound, discord.errors.ClientException, discord.ext.commands.errors.CommandInvokeError
 
 #CHANGE STATUS COMMAND
 @client.command(pass_context = True)
@@ -59,7 +71,10 @@ async def status(ctx, *args):
                 await client.change_presence(game = discord.Game(name = output))
                 await client.say("Status was changed to " + output)
         else:
-           await client.delete_message(ctx.message)
+            try: 
+                await client.delete_message(ctx.message)
+            
+            except: discord.errors.NotFound, discord.errors.ClientException, discord.ext.commands.errors.CommandInvokeError
 
 #BITCOIN BOT COMMAND
 @client.command()
@@ -92,16 +107,17 @@ async def echo(ctx, *args):
 
 #DM COMMAND
 @client.command(pass_context = True)
-async def dm(ctx, user : discord.Member, *args):
-    output = ""
-    for word in args:
-        output = output + word
-        output = output + " "
+async def dm(ctx, user : discord.Member, *args): # : discord.Member
     
+        output = ""
+        for word in args:
+            output = output + word
+            output = output + " "
+        
 
-    embed = discord.Embed(title = output, colour = discord.Colour.green())
+        embed = discord.Embed(title = output, colour = discord.Colour.green())
 
-    await client.send_message(user, embed = embed)
+        await client.send_message(user, embed = embed)
 
 #PING BOT COMMAND
 @client.command(pass_context = True)
@@ -133,12 +149,55 @@ async def help(ctx):
 
     embed.set_author(name = "HELP")
     
-    embed.add_field(name = "clear", value = "Clears the amount of messages [arg1]", inline = False)
+    embed.add_field(name = "clear", value = "Clears the amount of messages [arg1]. You can only delete more then 2 messages.", inline = False)
     embed.add_field(name = "bitcoin", value = "Shows 1 BTC amount in USD.", inline = False)
 
     await client.say(embed = embed)
 
+#CMD ERROR EVENT
+@client.event
+async def on_command_error(error, ctx):
+    if isinstance(error, commands.CommandNotFound):
+        return
+    if isinstance(error, commands.DisabledCommand):
+        return
+    try:
+        if isinstance(error.original, discord.Forbidden):
+            return
+        elif isinstance(error.original, discord.HTTPException) and 'empty message' in str(error.original):
+            return
+        elif isinstance(error.original, aiohttp.ClientOSError):
+            return
+    except AttributeError:
+        pass
 
+    if isinstance(error, commands.BadArgument):
+        fmt = "Please provide a valid argument to pass to the command: {}".format(error)
+        await client.send_message(ctx.message.channel, fmt)
+    elif isinstance(error, commands.CheckFailure):
+        fmt = "You can't tell me what to do!"
+        await client.send_message(ctx.message.channel, fmt)
+    elif isinstance(error, commands.CommandOnCooldown):
+        m, s = divmod(error.retry_after, 60)
+        fmt = "This command is on cooldown! Hold your horses! >:c\nTry again in {} minutes and {} seconds" \
+            .format(round(m), round(s))
+        await client.send_message(ctx.message.channel, fmt)
+    elif isinstance(error, commands.NoPrivateMessage):
+        fmt = "This command cannot be used in a private message"
+        await client.send_message(ctx.message.channel, fmt)
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await client.send_message(ctx.message.channel, error)
+    else:
+        now = datetime.datetime.now()
+        with open("error_log", 'a') as f:
+            print("In server '{0.message.server}' at {1}\nFull command: `{0.message.content}`".format(ctx, str(now)),
+                  file=f)
+            try:
+                traceback.print_tb(error.original.__traceback__, file=f)
+                print('{0.__class__.__name__}: {0}'.format(error.original), file=f)
+            except:
+                traceback.print_tb(error.__traceback__, file=f)
+                print('{0.__class__.__name__}: {0}'.format(error), file=f)
 
 
 
