@@ -115,7 +115,7 @@ async def dm(ctx, user : discord.Member, *args): # : discord.Member
             output = output + " "
         
 
-        embed = discord.Embed(title = output, colour = discord.Colour.green())
+        embed = discord.Embed(title = output, colour = discord.Colour.blue())
 
         await client.send_message(user, embed = embed)
 
