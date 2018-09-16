@@ -5,10 +5,11 @@ import random
 import aiohttp
 import json
 import time
+import os
 
-TOKEN = "MzkwMzI5NzE5ODcyMTU5NzY1.Dnxfsw.-IPj66ctnLzZnMrGTdUI8jZnGnU"
+TOKEN = os.environ("SuperBot_TOKEN")
 VERSION = "v0.04"
-PREFIX = "["
+PREFIX = ">"
 OWNERID = "248242789169496064"
 
 client = commands.Bot(command_prefix = PREFIX)
