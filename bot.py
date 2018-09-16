@@ -53,7 +53,7 @@ async def status(ctx, *args):
             else:
                 await client.change_presence(game = discord.Game(name = output))
                 await client.say("Status was changed to " + output + ".")
-        else:
+        elif ctx.message.author.id != ownerid:
             await client.say("You don't have permission to run the command.")
 
 #BITCOIN BOT COMMAND
