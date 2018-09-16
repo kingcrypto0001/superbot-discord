@@ -118,19 +118,6 @@ async def dm(ctx, user : discord.Member, *args): # : discord.Member
         embed = discord.Embed(title = output, colour = discord.Colour.blue())
 
         await client.send_message(user, embed = embed)
-
-#DM2 COMMAND
-@client.command(pass_context = True)
-async def dmu(ctx, userid, *args):
-    user = await client.get_user_info(userid)
-    output = ""
-    for word in args:
-        output = output + word
-        output = output + " "
-        
-    embed = discord.Embed(tile = output, colour = discord.Colour.blue())
-    
-    await client.send_message(user, embed = embed)
         
 #PING BOT COMMAND
 @client.command(pass_context = True)
